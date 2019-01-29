@@ -17,6 +17,12 @@ class MetricsHandler(IPythonHandler):
         all_processes = [cur_process] + cur_process.children(recursive=True)
         rss = sum([p.memory_info().rss for p in all_processes])
 
+        this_kernel_rss = None
+        if "kernel_id" in self.request.arguments:
+            kernel_id = self.request.arguments["kernel_id"]
+            kernel_id = kernel_id[0].decode("utf-8")
+            this_kernel_rss = get_rss_by_kernel(kernel_id)
+
         limits = {}
 
         if config.mem_limit != 0:
@@ -28,6 +34,7 @@ class MetricsHandler(IPythonHandler):
         metrics = {
             'rss': rss,
             'limits': limits,
+            'this_kernel_rss': this_kernel_rss,
         }
         self.write(json.dumps(metrics))
 
