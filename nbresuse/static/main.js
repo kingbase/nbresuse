@@ -21,7 +21,7 @@ define(['jquery', 'base/js/utils'], function ($, utils) {
     }
 
     var displayMetrics = function() {
-        $.getJSON(utils.get_body_data('baseUrl') + 'metrics', function(data) {
+        $.getJSON(utils.get_body_data('baseUrl') + 'metrics' + '?kernel_id=' + Jupyter.notebook.kernel.id, function(data) {
             // FIXME: Proper setups for MB and GB. MB should have 0 things
             // after the ., but GB should have 2.
             var display = Math.round(data['rss'] / (1024 * 1024));
