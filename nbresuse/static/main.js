@@ -8,7 +8,7 @@ define(['jquery', 'base/js/utils'], function ($, utils) {
                 $('<strong>').text('Memory: ')
             ).append(
                 $('<span>').attr('id', 'nbresuse-mem')
-                           .attr('title', 'Actively used Memory (updates every 5s)')
+                           .attr('title', 'Current Notebook / All Notebook Actively used Memory (updates every 5s)')
             )
         );
         // FIXME: Do something cleaner to get styles in here?
@@ -25,7 +25,10 @@ define(['jquery', 'base/js/utils'], function ($, utils) {
             // FIXME: Proper setups for MB and GB. MB should have 0 things
             // after the ., but GB should have 2.
             var display = Math.round(data['rss'] / (1024 * 1024));
-
+            if (data['this_kernel_rss'] !== null){
+                display = Math.round(data['this_kernel_rss'] / (1024 * 1024)) + " / " + display;
+            }
+            
             var limits = data['limits'];
             if ('memory' in limits) {
                 if ('rss' in limits['memory']) {
