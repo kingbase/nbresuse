@@ -7,6 +7,18 @@ from notebook.utils import url_path_join
 from notebook.base.handlers import IPythonHandler
 
 
+# slow on windows but much faster on linux
+def get_pid_via_connection_file(connection_file):
+    for p in psutil.process_iter():
+        try:
+            cmdline = p.cmdline()
+        except psutil.AccessDenied:
+            continue
+        if connection_file in ",".join(cmdline):
+            return p.pid
+    return None
+
+
 class MetricsHandler(IPythonHandler):
     def get(self):
         """
@@ -21,7 +33,12 @@ class MetricsHandler(IPythonHandler):
         if "kernel_id" in self.request.arguments:
             kernel_id = self.request.arguments["kernel_id"]
             kernel_id = kernel_id[0].decode("utf-8")
-            this_kernel_rss = get_rss_by_kernel(kernel_id)
+            kernel_pid = get_pid_via_connection_file(kernel_id)
+
+            if not kernel_pid is None:
+                kernel_process = psutil.Process(kernel_pid)
+                kernel_all_processes = [kernel_process] + kernel_process.children(recursive=True)
+                this_kernel_rss = sum([p.memory_info().rss for p in kernel_all_processes])
 
         limits = {}
 
